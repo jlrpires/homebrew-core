@@ -23,7 +23,7 @@ class Libcbor < Formula
       -DBUILD_SHARED_LIBS=ON
     ]
 
-    system "cmake", "-S", ".", "-B", "builddir", *args, *std_cmake_args
+    system "cmake", "-S", ".", "-B", "builddir", *args, *std_cmake_args, "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
     system "cmake", "--build", "builddir"
     system "cmake", "--install", "builddir"
   end
