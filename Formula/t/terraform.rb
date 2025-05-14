@@ -22,8 +22,8 @@ class Terraform < Formula
   end
 
   # https://www.hashicorp.com/blog/hashicorp-adopts-business-source-license
-  deprecate! date: "2024-04-04", because: "changed its license to BUSL on the next release"
-  disable! date: "2025-04-12", because: "changed its license to BUSL on the next release"
+  # deprecate! date: "2024-04-04", because: "changed its license to BUSL on the next release"
+  # disable! date: "2025-04-12", because: "changed its license to BUSL on the next release"
 
   depends_on "go" => :build
 

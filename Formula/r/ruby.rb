@@ -1,5 +1,9 @@
 class Ruby < Formula
-  desc "Powerful, clean, object-oriented scripting language"
+  env :std  # brew_custom.sh
+ 
+desc "Powerful, clean, object-oriented scripting language"
+ 
+
   homepage "https://www.ruby-lang.org/"
   license "Ruby"
   head "https://github.com/ruby/ruby.git", branch: "master"
@@ -74,8 +78,30 @@ class Ruby < Formula
   end
 
   def install
-    # otherwise `gem` command breaks
-    ENV.delete("SDKROOT")
+    ENV["CC"] = "/usr/local/opt/llvm/bin/clang"  # brew_custom.sh
+    ENV["CXX"] = "/usr/local/opt/llvm/bin/clang++"  # brew_custom.sh
+    ENV["OBJC"] = "/usr/local/opt/llvm/bin/clang"  # brew_custom.sh
+    ENV["OBJCXX"] = "/usr/local/opt/llvm/bin/clang++"  # brew_custom.sh    
+    ENV["HOMEBREW_CMAKE_ARGS"] = "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"  # brew_custom.sh
+    ENV["CMAKE_POLICY_VERSION_MINIMUM"] = "3.5"  # brew_custom.sh
+    ENV["ACLOCAL_PATH"] = "/usr/local/share/aclocal:/usr/local/Homebrew/Library/Homebrew/os/mac/aclocal"  # brew_custom.sh
+    ENV["CFLAGS"] = "-O2 -g0 -pipe -march=native"  # brew_custom.sh
+    ENV["CXXFLAGS"] = "-O2 -g0 -pipe -march=native -Xlinker -no_warn_duplicate_libraries"  # brew_custom.sh
+    ENV["HOMEBREW_RUBY_PATH"] = "/usr/local/Homebrew/Library/Homebrew/vendor/portable-ruby/current/bin/ruby"  # brew_custom.sh
+    ENV["CMAKE_INCLUDE_PATH"] = "/usr/local/include:/usr/local/opt/openssl@3/include:/usr/local/opt/libyaml/include:/Library/Developer/CommandLineTools/SDKs/MacOSX11.sdk/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers"  # brew_custom.sh
+    ENV["CMAKE_LIBRARY_PATH"] = "/usr/local/lib:/usr/local/opt/openssl@3/lib:/usr/local/opt/libyaml/lib:/Library/Developer/CommandLineTools/SDKs/MacOSX11.sdk/System/Library/Frameworks/OpenGL.framework/Versions/Current/Libraries"  # brew_custom.sh
+    ENV["PKG_CONFIG_LIBDIR"] = "/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig:/usr/local/Homebrew/Library/Homebrew/os/mac/pkgconfig/11:/usr/lib/pkgconfig"  # brew_custom.sh
+    ENV["PKG_CONFIG_PATH"] = "/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig:/usr/local/opt/llvm@20/lib/pkgconfig:/usr/local/opt/llvm@19/lib/pkgconfig:/usr/local/opt/llvm@18/lib/pkgconfig:/usr/local/opt/icu4c@77:/Library/Developer/CommandLineTools/SDKs/MacOSX11.sdk/usr/lib/pkgconfig:/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.sdk/usr/lib/pkgconfig"  # brew_custom.sh
+    ENV["HOMEBREW_NO_ENV_FILTERS"] = "rdoc"  # brew_custom.sh
+    ENV["LDFLAGS"] = "-isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX11.sdk -L/usr/local/lib -Wl,-headerpad_max_install_names -Wl,-dead_strip_dylibs -L/usr/local/opt/openssl@3/lib -L/usr/local/opt/libyaml/lib -O2 -g0 -w -pipe -march=native -Wl,-export_dynamic"  # brew_custom.sh
+    ENV["CPPFLAGS"] = "-isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX11.sdk -I/usr/local/include -I/usr/local/opt/openssl@3/include -I/usr/local/opt/libyaml/include -D_FORTIFY_SOURCE=2 -D_XOPEN_SOURCE=1 -fstack-protector-strong -fPIC -O2 -g0 -w -pipe -march=native"  # brew_custom.sh
+    ENV["CC"] = "/usr/local/opt/llvm/bin/clang"  # brew_custom.sh
+    ENV["CXX"] = "/usr/local/opt/llvm/bin/clang++"  # brew_custom.sh
+    ENV["OBJC"] = "/usr/local/opt/llvm/bin/clang"  # brew_custom.sh
+    ENV["OBJCXX"] = "/usr/local/opt/llvm/bin/clang++"  # brew_custom.sh
+    ENV["MACOSX_DEPLOYMENT_TARGET"] = "11.7"  # brew_custom.sh
+
+    ENV.delete("SDKROOT")  
 
     # Prevent `make` from trying to install headers into the SDK
     # TODO: Remove this workaround when the following PR is merged/resolved:
@@ -83,6 +109,8 @@ class Ruby < Formula
     inreplace "tool/mkconfig.rb", /^(\s+val = )'"\$\(SDKROOT\)"'\+/, "\\1"
 
     system "./autogen.sh" if build.head?
+
+    # system "rm -rf ext/ripper"
 
     paths = %w[libyaml openssl@3].map { |f| Formula[f].opt_prefix }
     args = %W[
@@ -93,12 +121,16 @@ class Ruby < Formula
       --with-vendordir=#{HOMEBREW_PREFIX}/lib/ruby/vendor_ruby
       --with-opt-dir=#{paths.join(":")}
       --without-gmp
-    ]
+      --disable-install-doc  
+    ] #<<-------------ADDED --disable-install-doc!!!!!!!!
+    
     args << "--with-baseruby=#{RbConfig.ruby}" if build.head?
     args << "--disable-dtrace" if OS.mac? && !MacOS::CLT.installed?
 
     # Correct MJIT_CC to not use superenv shim
     args << "MJIT_CC=/usr/bin/#{DevelopmentTools.default_compiler}"
+
+    # ENV.append "LDFLAGS", "-Wl,-export_dynamic"
 
     system "./configure", *args
 
@@ -114,8 +146,66 @@ class Ruby < Formula
       s.gsub! 'prepare "extension objects", sitearchlibdir', ""
       s.gsub! 'prepare "extension objects", vendorarchlibdir', ""
     end
-
+    
     system "make"
+
+ # Patch RubyGems hook to disable RDoc generation before setup is run.
+ # rubygems_hook = "rdoc/rubygems_hook.rb"
+ # if File.exist?(rubygems_hook)
+ # inreplace rubygems_hook, /def generate.*end/m, "def generate; end"
+ # ohai "RubyGems hook patched to skip documentation generation."
+ # end
+  
+  # Remove any native ripper.extension if it exists.
+ # rm_f "#{buildpath}/lib/ruby/3.4.0/x86_64-darwin20/ripper.bundle" if File.exist?("#{buildpath}/lib/ruby/3.4.0/x86_64-darwin20/ripper.bundle")
+  
+  # Then create the dummy ripper file...
+  # rm_f "lib/ripper.rb"
+  
+# ohai "Expanding dummy ripper file to bypass missing constants..."
+# dummy_ripper = "lib/ripper.rb"
+# File.open(dummy_ripper, "w") do |f|
+#  f.puts <<~RUBY
+#    module Ripper
+#      EXPR_BEG       = 0
+#      EXPR_END       = 0
+#      EXPR_ENDFN     = 0
+#      EXPR_ARG       = 0
+#      EXPR_CMDARG    = 0
+#      EXPR_ARG2      = 0
+#      EXPR_ENDARG    = 0
+#      EXPR_FNAME     = 0
+#      EXPR_DOT       = 0
+#      EXPR_ENDLABEL  = 0
+#
+#      def self.lex(*args)
+#        []
+#      end
+#
+#      def self.sexp(*args)
+#        nil
+#      end
+#
+#       # Force override of Ripper.parse:
+#        class << self
+#          # Undefine an existing :parse if it exists.
+#          remove_method(:parse) if method_defined?(:parse)
+#          def parse(*args)
+#            puts "Using dummy Ripper.parse (arity = \#{method(:parse).arity})"
+#            # Return a dummy token structure.
+#            [["on_ident", "dummy", [:ident, nil]], ["on_sp", " ", [:space, nil]]]
+#          end
+#        end
+#
+#      # Adding a dummy `Filter` class to prevent NameError
+#      class Filter
+#        def initialize(*args); end
+#        def parse; end
+#      end
+#    end
+#  RUBY
+# end
+
     system "make", "install"
 
     # A newer version of ruby-mode.el is shipped with Emacs
@@ -140,7 +230,7 @@ class Ruby < Formula
       resource("rubygems").stage do
         ENV.prepend_path "PATH", bin
 
-        system bin/"ruby", "setup.rb", "--prefix=#{buildpath}/vendor_gem"
+        system "#{bin}/ruby", "setup.rb", "--prefix=#{buildpath}/vendor_gem", "--no-rdoc", "--no-ri" #<<<----------- MAGIC LINE!!!!
         rg_in = lib/"ruby/#{api_version}"
         rg_gems_in = lib/"ruby/gems/#{api_version}"
 

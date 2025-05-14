@@ -29,6 +29,24 @@ class Ripgrep < Formula
   depends_on "pcre2"
 
   def install
+    ENV["HOMEBREW_CMAKE_ARGS"] = "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"  # brew_custom.sh
+    ENV["CMAKE_POLICY_VERSION_MINIMUM"] = "3.5"  # brew_custom.sh
+    ENV["ACLOCAL_PATH"] = "/usr/local/share/aclocal:/usr/local/Homebrew/Library/Homebrew/os/mac/aclocal"  # brew_custom.sh
+    ENV["CFLAGS"] = "-O2 -g0 -pipe -march=native"  # brew_custom.sh
+    ENV["CXXFLAGS"] = "-O2 -g0 -pipe -march=native -Xlinker -no_warn_duplicate_libraries"  # brew_custom.sh
+    ENV["HOMEBREW_RUBY_PATH"] = "/usr/local/Homebrew/Library/Homebrew/vendor/portable-ruby/current/bin/ruby"  # brew_custom.sh
+    ENV["CMAKE_INCLUDE_PATH"] = "/usr/local/include:/usr/local/opt/openssl@3/include:/usr/local/opt/libyaml/include:/Library/Developer/CommandLineTools/SDKs/MacOSX11.sdk/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers"  # brew_custom.sh
+    ENV["CMAKE_LIBRARY_PATH"] = "/usr/local/lib:/usr/local/opt/openssl@3/lib:/usr/local/opt/libyaml/lib:/Library/Developer/CommandLineTools/SDKs/MacOSX11.sdk/System/Library/Frameworks/OpenGL.framework/Versions/Current/Libraries"  # brew_custom.sh
+    ENV["PKG_CONFIG_LIBDIR"] = "/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig:/usr/local/Homebrew/Library/Homebrew/os/mac/pkgconfig/11:/usr/lib/pkgconfig"  # brew_custom.sh
+    ENV["PKG_CONFIG_PATH"] = "/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig:/usr/local/opt/llvm@20/lib/pkgconfig:/usr/local/opt/llvm@19/lib/pkgconfig:/usr/local/opt/llvm@18/lib/pkgconfig:/usr/local/opt/icu4c@77:/Library/Developer/CommandLineTools/SDKs/MacOSX11.sdk/usr/lib/pkgconfig:/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.sdk/usr/lib/pkgconfig"  # brew_custom.sh
+    ENV["HOMEBREW_NO_ENV_FILTERS"] = "rdoc"  # brew_custom.sh
+    ENV["LDFLAGS"] = "-isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX11.sdk -L/usr/local/lib -Wl,-headerpad_max_install_names -Wl,-dead_strip_dylibs -L/usr/local/opt/openssl@3/lib -L/usr/local/opt/libyaml/lib -O2 -g0 -w -pipe -march=native -Wl,-export_dynamic"  # brew_custom.sh
+    ENV["CPPFLAGS"] = "-isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX11.sdk -I/usr/local/include -I/usr/local/opt/openssl@3/include -I/usr/local/opt/libyaml/include -D_FORTIFY_SOURCE=2 -D_XOPEN_SOURCE=1 -fstack-protector-strong -fPIC -O2 -g0 -w -pipe -march=native"  # brew_custom.sh
+    ENV["CC"] = "/usr/local/opt/llvm/bin/clang"  # brew_custom.sh
+    ENV["CXX"] = "/usr/local/opt/llvm/bin/clang++"  # brew_custom.sh
+    ENV["OBJC"] = "/usr/local/opt/llvm/bin/clang"  # brew_custom.sh
+    ENV["OBJCXX"] = "/usr/local/opt/llvm/bin/clang++"  # brew_custom.sh
+    ENV["MACOSX_DEPLOYMENT_TARGET"] = "11.7"  # brew_custom.sh
     system "cargo", "install", "--features", "pcre2", *std_cargo_args
 
     generate_completions_from_executable(bin/"rg", "--generate", shell_parameter_format: "complete-")

@@ -18,7 +18,7 @@ class Asciidoctor < Formula
   end
 
   # Some gems require >= ruby 2.7
-  depends_on "ruby"
+  depends_on "rbenv"
 
   # Dependencies are for the asciidoctor-pdf, coderay, pygments.rb and rouge gems
 

@@ -20,7 +20,7 @@ class Icu4cAT76 < Formula
   keg_only :versioned_formula
 
   # Deprecated with ICU 77.1 release
-  deprecate! date: "2025-03-29", because: :versioned_formula
+  #deprecate! date: "2025-03-29", because: :versioned_formula
 
   def install
     args = %w[

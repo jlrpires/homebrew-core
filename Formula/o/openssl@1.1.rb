@@ -26,7 +26,7 @@ class OpensslAT11 < Formula
   keg_only :versioned_formula
 
   # See: https://www.openssl.org/policies/releasestrat.html
-  disable! date: "2024-10-24", because: :unsupported
+  #disable! date: "2024-10-24", because: :unsupported
 
   depends_on "ca-certificates"
 

@@ -5,6 +5,9 @@ class GitLfs < Formula
   sha256 "1417b7ee9a8fba8d649a89f070fdcde8b2593ca2caa74e3e808d2bb35d5ca5f7"
   license "MIT"
 
+  # Set default environment
+  env :std
+
   # Upstream creates releases that are sometimes not the latest stable version,
   # so we use the `github_latest` strategy to fetch the release tagged as "latest".
   livecheck do
@@ -27,6 +30,9 @@ class GitLfs < Formula
   def install
     ENV["GIT_LFS_SHA"] = ""
     ENV["VERSION"] = version
+
+    ENV.delete('CPPFLAGS')
+    ENV.delete('LDFLAGS')
 
     system "make"
     system "make", "man"
